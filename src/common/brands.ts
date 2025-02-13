@@ -92,10 +92,9 @@ export async function assignBrandIfKnown(
   ]);
 
   let updateProducts: any[] = [];
-  let onlyModifiedProducts: any[] = [];
+  let modifiedProductsOnly: any[] = [];
 
   products.forEach((product) => {
-
     if (product.m_id) {
       updateProducts.push(product);
       return;
@@ -120,7 +119,7 @@ export async function assignBrandIfKnown(
       // only modified products
       console.log({ matchedBrands });
 
-      onlyModifiedProducts.push({
+      modifiedProductsOnly.push({
         ...product,
         manufacturer: matchedBrands.size ? [...matchedBrands][0] : null,
         m_id: product.source_id,
@@ -157,16 +156,10 @@ export async function assignBrandIfKnown(
   jsonfile.writeFileSync("./update_product_data.json", updateProducts);
 
   console.log("\n----------------------------\n");
-
-  console.log("Total products: ", updateProducts.length);
-
-  console.log("\n----------------------------\n");
   // only modified products
-  jsonfile.writeFileSync("./only_modified_products.json", onlyModifiedProducts);
-  console.log(
-    "Total modified products matched brands: ",
-    onlyModifiedProducts.length
-  );
+  jsonfile.writeFileSync("./modified_products_only.json", modifiedProductsOnly);
+  console.log({modifiedProductsOnly});
+  ;
   console.log("\n----------------------------\n");
 }
 
@@ -192,11 +185,12 @@ const priorityBrands = new Set([
   "happy",
 ]);
 
+// Convert arrays to sets for O(1) lookup
 const secondaryBrands = new Set(["heel", "contour", "nero", "rsv"]);
 let inputText = ""
 let _brndArr = []
 
-// also working
+
 export const brandValidation = (
   input: string,
   brand: string,
@@ -216,7 +210,7 @@ export const brandValidation = (
   if (ignoreRegex.test(processedInput)) {
     return null;
   }
-  let words = [] //processedInput.split(/\s+/); // Tokenize words
+  let words = []
 
   if ( processedInput && inputText !== processedInput) {
      words = processedInput.split(/\s+/); // Tokenize words
@@ -226,7 +220,6 @@ export const brandValidation = (
     processedInput = inputText
     words = _brndArr
   }
-// console.log({words});
 
   // Find the first match among priority, secondary brands, or "HAPPY"
   if (priorityBrands.has(words[0]) && !matchedBrands.has(words[0]))return words[0];
@@ -234,7 +227,5 @@ export const brandValidation = (
   else if (secondaryBrands.has(words[1]) && !matchedBrands.has(words[1]))return words[1];
   else if (happyRegex.test(processedInput) && !matchedBrands.has("HAPPY"))return "HAPPY";
   else return null
-};
-
-
+}
 console.log("\n----------------------------\n");
